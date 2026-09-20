@@ -1,0 +1,15 @@
+App(
+    appid="grid_synth",
+    name="Grid Synth",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="grid_synth_app",
+    requires=[
+        "storage",
+        "gui",
+    ],
+    stack_size=2 * 1024,
+    fap_category="Media",
+    fap_description="12-note and 3-drum step sequencer grid synth",
+    fap_version="1.0",
+    fap_icon="grid_synth.png",
+)
