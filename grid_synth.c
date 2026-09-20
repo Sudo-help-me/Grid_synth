@@ -182,9 +182,11 @@ static void play_tone_safe(AppState* state, float freq) {
 
 static void play_preview_note(AppState* state) {
     if(state->section == SectionDrums) {
-        float drum_freqs[] = {7500.0f, 2000.0f, 100.0f};
+        float drum_freqs[] = {8000.0f, 1500.0f, 60.0f};
         if(state->cursor_y < 3) {
             play_tone_safe(state, drum_freqs[state->cursor_y]);
+            furi_delay_ms(20);
+            stop_tone_safe(state);
         }
     } else {
         float freq = get_note_frequency(state->cursor_y, state->current_octave_idx);
@@ -416,7 +418,7 @@ static void draw_callback(Canvas* canvas, void* context) {
             char oct_str[8];
             int display_oct = (int)state->current_octave_idx + 4;
             snprintf(oct_str, sizeof(oct_str), "C%d", display_oct);
-            canvas_draw_str(canvas, keyboard_w + 3, offset_y + 4, oct_str);
+            canvas_draw_str(canvas, keyboard_w + 3, offset_y + 6, oct_str);
 
             for(uint8_t r = 0; r < GRID_ROWS_NOTES; r++) {
                 for(uint8_t c = 0; c < VISIBLE_COLS; c++) {
@@ -506,16 +508,37 @@ static void draw_callback(Canvas* canvas, void* context) {
                 "Load Song",
                 "Back to Grid"};
 
-            for(uint8_t i = 0; i < MenuItemCount; i++) {
-                uint8_t y = 15 + (i * 7);
-                if(state->menu_cursor == i) {
-                    canvas_draw_str(canvas, 2, y, ">");
+            const uint8_t max_visible = 4;
+            uint8_t start_idx = 0;
+            
+            if(state->menu_cursor > 2) {
+                start_idx = state->menu_cursor - 2;
+                if(start_idx > MenuItemCount - max_visible) {
+                    start_idx = MenuItemCount - max_visible;
                 }
-                canvas_draw_str(canvas, 10, y, menu_items[i]);
             }
 
+            for(uint8_t i = 0; i < max_visible; i++) {
+                uint8_t item_idx = start_idx + i;
+                if(item_idx >= MenuItemCount) break;
+
+                uint8_t y = 18 + (i * 11);
+                if(state->menu_cursor == item_idx) {
+                    canvas_draw_str(canvas, 2, y, ">");
+                }
+                canvas_draw_str(canvas, 12, y, menu_items[item_idx]);
+            }
+
+            // Draw scrollbar
+            uint8_t scrollbar_h = 42;
+            uint8_t scroll_step_y = (scrollbar_h - (scrollbar_h / 2)) / (MenuItemCount - 1);
+            uint8_t scroll_y = 12 + (state->menu_cursor * scroll_step_y);
+            
+            canvas_draw_frame(canvas, 125, 12, 3, scrollbar_h);
+            canvas_draw_box(canvas, 125, scroll_y, 3, scrollbar_h / 2);
+
             if(strlen(state->status_msg) > 0) {
-                canvas_draw_str(canvas, 2, 63, state->status_msg);
+                canvas_draw_str(canvas, 2, 62, state->status_msg);
             }
         }
     }
@@ -551,6 +574,7 @@ static void process_tick(AppState* state) {
 
     if(state->is_playing) {
         bool play_sound = false;
+        bool is_drum_tick = false;
         float tone_freq = 0.0f;
 
         uint32_t active_max_col = state->max_col;
@@ -571,10 +595,11 @@ static void process_tick(AppState* state) {
         for(size_t i = 0; i < state->note_count; i++) {
             if(state->notes[i].col == state->play_head) {
                 if(state->notes[i].is_drum) {
-                    float drum_freqs[] = {7500.0f, 2000.0f, 100.0f};
+                    float drum_freqs[] = {8000.0f, 1500.0f, 60.0f};
                     if(state->notes[i].row < 3) {
                         tone_freq = drum_freqs[state->notes[i].row];
                         play_sound = true;
+                        is_drum_tick = true;
                         break; 
                     }
                 } else if(!play_sound) {
@@ -586,6 +611,11 @@ static void process_tick(AppState* state) {
 
         if(play_sound) {
             play_tone_safe(state, tone_freq);
+            
+            if(is_drum_tick) {
+                furi_delay_ms(15); 
+                stop_tone_safe(state);
+            }
         } else {
             stop_tone_safe(state);
         }
