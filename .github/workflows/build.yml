@@ -19,7 +19,8 @@ jobs:
           - name: release channel
             sdk-channel: release
           - name: Unofficial firmware
-            sdk-index-url: https://github.com/next-flip/momentum-firmware
+            # Must point directly to the index.json manifest
+            sdk-index-url: https://raw.githubusercontent.com/next-flip/momentum-firmware/dev/schedules/build/directory.json
             sdk-channel: dev
     name: 'ufbt: Build for ${{ matrix.name }}'
     steps:
