@@ -1,14 +1,13 @@
 name: "FAP: Build for multiple SDK sources"
 on:
   push:
-    ## put your main branch name under "branches"
     branches: 
       - master 
   pull_request:
   schedule: 
-    # do a build every day
     - cron: "1 1 * * *"
   workflow_dispatch:
+
 jobs:
   ufbt-build-action:
     runs-on: ubuntu-latest
@@ -20,24 +19,25 @@ jobs:
           - name: release channel
             sdk-channel: release
           - name: Unofficial firmware
-            # example URL, replace with a valid one
-            # you can also use other modes for specifying SDK sources
             sdk-index-url: https://github.com/next-flip/momentum-firmware
             sdk-channel: dev
     name: 'ufbt: Build for ${{ matrix.name }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Build with ufbt
         uses: flipperdevices/flipperzero-ufbt-action@v0.1
         id: build-app
         with:
           sdk-channel: ${{ matrix.sdk-channel }}
           sdk-index-url: ${{ matrix.sdk-index-url }}
+
       - name: Upload app artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
+          path: ${{ steps.build-app.outputs.fap-artifacts }}
           path: ${{ steps.build-app.outputs.fap-artifacts }}
         with:
           name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
