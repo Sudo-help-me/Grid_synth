@@ -1,7 +1,7 @@
 name: "FAP: Build for multiple SDK sources"
 on:
   push:
-    ## put your main branch name under "braches"
+    ## put your main branch name under "branches"
     branches: 
       - master 
   pull_request:
@@ -35,7 +35,10 @@ jobs:
           sdk-channel: ${{ matrix.sdk-channel }}
           sdk-index-url: ${{ matrix.sdk-index-url }}
       - name: Upload app artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
+          path: ${{ steps.build-app.outputs.fap-artifacts }}
         with:
           name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
           path: ${{ steps.build-app.outputs.fap-artifacts }}
