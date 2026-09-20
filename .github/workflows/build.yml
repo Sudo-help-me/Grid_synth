@@ -12,6 +12,7 @@ jobs:
   ufbt-build-action:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: dev channel
@@ -19,7 +20,6 @@ jobs:
           - name: release channel
             sdk-channel: release
           - name: Unofficial firmware
-            # Must point directly to the index.json manifest
             sdk-index-url: https://raw.githubusercontent.com/next-flip/momentum-firmware/dev/schedules/build/directory.json
             sdk-channel: dev
     name: 'ufbt: Build for ${{ matrix.name }}'
