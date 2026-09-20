@@ -13,5 +13,5 @@ App(
     fap_description="12-note and 3-drum step sequencer grid synth",
     fap_author="Sudo-help-me",
     fap_weburl="https://github.com/Sudo-help-me/Grid_synth",
-    fap_version=(1, 0),
+    fap_version="1.0",
 )
